@@ -13,8 +13,6 @@ import (
 	"sync"
 	"syscall"
 	"unsafe"
-
-	"github.com/mattn/go-isatty"
 )
 
 const (
@@ -104,17 +102,14 @@ func NewColorable(file *os.File) io.Writer {
 		panic("nil passed instead of *os.File to NewColorable()")
 	}
 
-	if isatty.IsTerminal(file.Fd()) {
-		var mode uint32
-		if r, _, _ := procGetConsoleMode.Call(file.Fd(), uintptr(unsafe.Pointer(&mode))); r != 0 && mode&cENABLE_VIRTUAL_TERMINAL_PROCESSING != 0 {
-			return file
-		}
-		var csbi consoleScreenBufferInfo
-		handle := syscall.Handle(file.Fd())
-		procGetConsoleScreenBufferInfo.Call(uintptr(handle), uintptr(unsafe.Pointer(&csbi)))
-		return &Writer{out: file, handle: handle, oldattr: csbi.attributes, oldpos: coord{0, 0}}
+	var mode uint32
+	if r, _, _ := procGetConsoleMode.Call(file.Fd(), uintptr(unsafe.Pointer(&mode))); r != 0 && mode&cENABLE_VIRTUAL_TERMINAL_PROCESSING != 0 {
+		return file
 	}
-	return file
+	var csbi consoleScreenBufferInfo
+	handle := syscall.Handle(file.Fd())
+	procGetConsoleScreenBufferInfo.Call(uintptr(handle), uintptr(unsafe.Pointer(&csbi)))
+	return &Writer{out: file, handle: handle, oldattr: csbi.attributes, oldpos: coord{0, 0}}
 }
 
 // NewColorableStdout returns new instance of Writer which handles escape sequence for stdout.
