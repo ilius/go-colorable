@@ -1,3 +1,3 @@
-module github.com/mattn/go-colorable
+module github.com/ilius/go-colorable
 
 go 1.15
