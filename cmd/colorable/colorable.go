@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/mattn/go-colorable"
+	"github.com/ilius/go-colorable"
 )
 
 func main() {
